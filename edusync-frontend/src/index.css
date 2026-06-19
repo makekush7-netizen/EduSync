@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════
+   EduSync — Warm Academia Design System
+   ═══════════════════════════════════════════ */
+
+@layer base {
+  * {
+    @apply border-warm-200;
+  }
+
+  body {
+    @apply bg-warm-50 text-gray-800 font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-warm-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-warm-400;
+  }
+}
+
+@layer components {
+  /* ─── Glass Card ─── */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl shadow-card;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    @apply shadow-card-hover;
+    transform: translateY(-2px);
+  }
+
+  /* ─── Solid Card ─── */
+  .solid-card {
+    @apply bg-white rounded-2xl shadow-card border border-gray-100;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ─── Gradient Backgrounds ─── */
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  }
+
+  .bg-gradient-warm {
+    background: linear-gradient(135deg, #FAFAF5 0%, #F5F5EB 100%);
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 30%, #047857 60%, #059669 100%);
+  }
+
+  /* ─── Input Styles ─── */
+  .input-base {
+    @apply w-full px-4 py-3 bg-warm-50 border border-warm-200 rounded-xl text-gray-800
+           placeholder:text-warm-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 
+           focus:border-brand-500 transition-all duration-200;
+  }
+
+  .input-base:hover {
+    @apply border-warm-300;
+  }
+
+  /* ─── Button Variants ─── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed text-sm;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500
+           shadow-sm hover:shadow-md active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 
+           focus:ring-gray-300 hover:border-gray-300;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-500 text-white hover:bg-red-600 focus:ring-red-400;
+  }
+
+  .btn-ghost {
+    @apply btn text-gray-600 hover:bg-warm-100 hover:text-gray-800;
+  }
+
+  .btn-amber {
+    @apply btn bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400
+           shadow-sm hover:shadow-md;
+  }
+
+  /* ─── Badge Variants ─── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-brand-50 text-brand-700 border border-brand-200;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-50 text-amber-700 border border-amber-200;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-50 text-red-700 border border-red-200;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-50 text-blue-700 border border-blue-200;
+  }
+
+  .badge-neutral {
+    @apply badge bg-gray-100 text-gray-600 border border-gray-200;
+  }
+
+  /* ─── Page transitions ─── */
+  .page-enter {
+    @apply animate-fade-in;
+  }
+
+  /* ─── Sidebar ─── */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+           text-warm-600 hover:bg-brand-50 hover:text-brand-700 transition-all duration-200;
+  }
+
+  .sidebar-link-active {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+           bg-brand-50 text-brand-700 border border-brand-100;
+  }
+
+  /* ─── Stat Card ─── */
+  .stat-card {
+    @apply solid-card p-6;
+  }
+
+  /* ─── Empty State ─── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+}
+
+@layer utilities {
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #059669, #10b981);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

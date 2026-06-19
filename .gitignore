@@ -1,0 +1,10 @@
+edusync-backend/venv/
+edusync-backend/__pycache__/
+edusync-backend/*.db
+edusync-backend/.env
+edusync-frontend/node_modules/
+edusync-frontend/dist/
+edusync-frontend/.env
+**/__pycache__/
+*.pyc
+.DS_Store
