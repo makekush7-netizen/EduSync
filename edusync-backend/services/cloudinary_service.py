@@ -1,6 +1,5 @@
 import cloudinary
 import cloudinary.uploader
-import cloudinary.config
 from config import settings
 
 class CloudinaryService:
