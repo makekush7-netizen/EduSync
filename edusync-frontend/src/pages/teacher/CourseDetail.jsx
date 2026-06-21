@@ -89,7 +89,7 @@ export default function CourseDetail() {
       fd.append('content_text', lessonForm.content_text);
     } else if (lessonForm.content_type === 'video_link') {
       fd.append('content_url', lessonForm.content_url);
-    } else if (lessonForm.content_type === 'pdf' && lessonForm.file) {
+    } else if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && lessonForm.file) {
       fd.append('file', lessonForm.file);
     }
     lessonMutation.mutate(fd);
