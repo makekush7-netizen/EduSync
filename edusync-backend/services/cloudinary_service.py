@@ -1,13 +1,13 @@
 import cloudinary
 import cloudinary.uploader
+import cloudinary.config
 from config import settings
 
 class CloudinaryService:
     @staticmethod
     def configure():
         if settings.CLOUDINARY_URL:
-            # Cloudinary auto-configures if CLOUDINARY_URL env var is present
-            pass
+            cloudinary.config(cloudinary_url=settings.CLOUDINARY_URL)
 
     @staticmethod
     def upload_file(file_bytes: bytes, filename: str, folder: str = "edusync") -> str:

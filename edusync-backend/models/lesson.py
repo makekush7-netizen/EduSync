@@ -8,6 +8,8 @@ from database import Base
 class ContentType(str, enum.Enum):
     pdf = "pdf"
     video_link = "video_link"
+    image = "image"
+    video = "video"
     text = "text"
 
 class Lesson(Base):

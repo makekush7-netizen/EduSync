@@ -59,7 +59,7 @@ export default function CourseView() {
     submitMutation.mutate({ homeworkId: hwId, formData: fd });
   };
 
-  const contentTypeIcons = { text: Type, video_link: Video, pdf: FileIcon };
+  const contentTypeIcons = { text: Type, video_link: Video, pdf: FileIcon, image: FileIcon, video: Video };
 
   const tabs = [
     { key: 'lessons', label: 'Lessons', count: lessons?.length },
@@ -140,7 +140,15 @@ export default function CourseView() {
                         </div>
                         <span className="badge-neutral flex items-center gap-1 flex-shrink-0">
                           <Icon size={12} />
-                          {lesson.content_type === 'video_link' ? 'Video' : lesson.content_type === 'pdf' ? 'PDF' : 'Text'}
+                          {lesson.content_type === 'video_link'
+                            ? 'Video Link'
+                            : lesson.content_type === 'pdf'
+                              ? 'PDF'
+                              : lesson.content_type === 'image'
+                                ? 'Image'
+                                : lesson.content_type === 'video'
+                                  ? 'Video'
+                                  : 'Text'}
                         </span>
                       </button>
                       {isExpanded && (
@@ -170,6 +178,19 @@ export default function CourseView() {
                               >
                                 <Download size={16} /> Download PDF
                               </a>
+                            )}
+                            {lesson.content_type === 'image' && lesson.content_url && (
+                              <img
+                                src={lesson.content_url}
+                                alt={lesson.title}
+                                className="max-w-full rounded-xl border border-gray-200"
+                              />
+                            )}
+                            {lesson.content_type === 'video' && lesson.content_url && (
+                              <video controls className="w-full rounded-xl border border-gray-200">
+                                <source src={lesson.content_url} />
+                                Your browser does not support the video tag.
+                              </video>
                             )}
                           </div>
                         </div>

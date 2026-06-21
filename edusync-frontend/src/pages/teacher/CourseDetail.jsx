@@ -104,12 +104,16 @@ export default function CourseDetail() {
     text: <Type size={14} />,
     video_link: <Video size={14} />,
     pdf: <FileIcon size={14} />,
+    image: <Image size={14} />,
+    video: <Video size={14} />,
   };
 
   const contentTypeLabels = {
     text: 'Rich Text',
     video_link: 'Video Link',
     pdf: 'PDF Document',
+    image: 'Image Upload',
+    video: 'Video Upload',
   };
 
   if (courseLoading) {
@@ -206,6 +210,8 @@ export default function CourseDetail() {
                       <option value="text">Rich Text</option>
                       <option value="video_link">Video Link</option>
                       <option value="pdf">PDF Upload</option>
+                      <option value="image">Image Upload</option>
+                      <option value="video">Video Upload</option>
                     </select>
                   </div>
                 </div>
@@ -252,6 +258,30 @@ export default function CourseDetail() {
                     <input
                       type="file"
                       accept=".pdf"
+                      onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
+                      className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
+                    />
+                  </div>
+                )}
+
+                {lessonForm.content_type === 'image' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Image File</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
+                      className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
+                    />
+                  </div>
+                )}
+
+                {lessonForm.content_type === 'video' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Video File</label>
+                    <input
+                      type="file"
+                      accept="video/*"
                       onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />

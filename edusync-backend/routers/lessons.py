@@ -29,10 +29,13 @@ async def create_lesson(
         raise HTTPException(status_code=403, detail="Not authorized to add lessons to this course")
 
     url = content_url
-    if content_type == models.ContentType.pdf and file:
+    upload_types = {models.ContentType.pdf, models.ContentType.image, models.ContentType.video}
+    if content_type in upload_types and file:
         file_bytes = await file.read()
         filename = f"lesson_{course_id}_{file.filename}"
         url = CloudinaryService.upload_file(file_bytes, filename)
+    elif content_type in upload_types and not file:
+        raise HTTPException(status_code=400, detail="A file is required for this lesson type")
 
     order = db.query(models.Lesson).filter(models.Lesson.course_id == course_id).count()
 
