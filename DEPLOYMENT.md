@@ -12,6 +12,7 @@ Example:
 
 ```env
 DATABASE_URL=postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
+SUPABASE_DATABASE_URL=postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres
 ```
 
 ## 2) Cloudinary storage
@@ -44,6 +45,7 @@ GEMINI_API_KEY=your_gemini_key
 5. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 6. Add env vars:
    - `DATABASE_URL`
+   - `SUPABASE_DATABASE_URL`
    - `SECRET_KEY`
    - `ALGORITHM=HS256`
    - `ACCESS_TOKEN_EXPIRE_MINUTES=1440`
