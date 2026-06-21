@@ -12,7 +12,7 @@ export default function BrowseCourses() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses, isLoading, error } = useQuery({
     queryKey: ['all-courses'],
     queryFn: () => courseAPI.getAll().then((r) => r.data),
   });
@@ -112,6 +112,11 @@ export default function BrowseCourses() {
           <div className="flex justify-center py-16">
             <Loader2 className="animate-spin text-brand-500" size={28} />
           </div>
+        ) : error ? (
+          <div className="empty-state">
+            <p className="text-red-600 font-medium mb-1">Failed to load courses</p>
+            <p className="text-warm-500 text-sm">{error?.response?.data?.detail || 'Please try again later'}</p>
+          </div>
         ) : filtered?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((course) => {
@@ -134,7 +139,7 @@ export default function BrowseCourses() {
                     {isEnrolled ? (
                       <div className="flex items-center gap-1.5 text-sm text-brand-600">
                         <CheckCircle size={16} />
-                        <span className="font-medium">You&apos;re enrolled</span>
+                        <span className="font-medium">You're enrolled</span>
                       </div>
                     ) : isPending ? (
                       <div className="flex items-center gap-1.5 text-sm text-amber-600">

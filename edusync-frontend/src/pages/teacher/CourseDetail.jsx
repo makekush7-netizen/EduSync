@@ -6,7 +6,7 @@ import { courseAPI, lessonAPI, homeworkAPI } from '../../lib/api';
 import {
   ArrowLeft, FileText, Plus, Upload, Link as LinkIcon, Type,
   Loader2, ClipboardList, Sparkles, Settings, Calendar, Eye,
-  Video, FileIcon, AlignLeft
+  Video, FileIcon, Image
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -31,7 +31,7 @@ export default function CourseDetail() {
   // Prompt form state
   const [prompt, setPrompt] = useState('');
 
-  const { data: course, isLoading: courseLoading } = useQuery({
+  const { data: course, isLoading: courseLoading, error: courseError } = useQuery({
     queryKey: ['course', id],
     queryFn: () => courseAPI.getById(id).then((r) => r.data),
     onSuccess: (data) => setPrompt(data.chatbot_system_prompt || ''),
@@ -126,6 +126,17 @@ export default function CourseDetail() {
     );
   }
 
+  if (courseError) {
+    return (
+      <PageShell>
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-red-600 font-medium mb-2">Failed to load course</p>
+          <p className="text-warm-500 text-sm">{courseError?.response?.data?.detail || 'Please try again later'}</p>
+        </div>
+      </PageShell>
+    );
+  }
+
   const tabs = [
     { key: 'lessons', label: 'Lessons', count: lessons?.length },
     { key: 'homework', label: 'Homework', count: homeworks?.length },
@@ -158,18 +169,16 @@ export default function CourseDetail() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === tab.key
-                  ? 'border-brand-500 text-brand-700'
-                  : 'border-transparent text-warm-500 hover:text-gray-700'
-              }`}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${activeTab === tab.key
+                ? 'border-brand-500 text-brand-700'
+                : 'border-transparent text-warm-500 hover:text-gray-700'
+                }`}
             >
               {tab.icon && <tab.icon size={16} />}
               {tab.label}
               {tab.count !== undefined && (
-                <span className={`px-1.5 py-0.5 rounded text-xs ${
-                  activeTab === tab.key ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'
-                }`}>
+                <span className={`px-1.5 py-0.5 rounded text-xs ${activeTab === tab.key ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
                   {tab.count || 0}
                 </span>
               )}
@@ -322,7 +331,7 @@ export default function CourseDetail() {
               <div className="empty-state">
                 <FileText size={40} className="text-warm-300 mb-3" />
                 <p className="text-warm-500">No lessons yet</p>
-                <p className="text-warm-400 text-xs mt-1">Click &quot;Add Lesson&quot; to create your first lesson</p>
+                <p className="text-warm-400 text-xs mt-1">Click "Add Lesson" to create your first lesson</p>
               </div>
             )}
           </div>
