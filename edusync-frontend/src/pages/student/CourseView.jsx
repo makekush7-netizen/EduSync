@@ -5,7 +5,7 @@ import PageShell from '../../components/layout/PageShell';
 import { courseAPI, lessonAPI, homeworkAPI } from '../../lib/api';
 import {
   ArrowLeft, FileText, Video, Type, File as FileIcon, Download,
-  ExternalLink, ClipboardList, Calendar, Loader2, Upload, MessageSquare, Sparkles
+  ExternalLink, ClipboardList, Calendar, Loader2, Upload, MessageSquare, Sparkles, Image
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -23,17 +23,17 @@ export default function CourseView() {
     file: null,
   });
 
-  const { data: course } = useQuery({
+  const { data: course, error: courseError } = useQuery({
     queryKey: ['course', id],
     queryFn: () => courseAPI.getById(id).then((r) => r.data),
   });
 
-  const { data: lessons } = useQuery({
+  const { data: lessons, error: lessonsError } = useQuery({
     queryKey: ['lessons', id],
     queryFn: () => lessonAPI.getByCourse(id).then((r) => r.data),
   });
 
-  const { data: homeworks } = useQuery({
+  const { data: homeworks, error: homeworksError } = useQuery({
     queryKey: ['homework', id],
     queryFn: () => homeworkAPI.getByCourse(id).then((r) => r.data),
   });
@@ -59,7 +59,7 @@ export default function CourseView() {
     submitMutation.mutate({ homeworkId: hwId, formData: fd });
   };
 
-  const contentTypeIcons = { text: Type, video_link: Video, pdf: FileIcon, image: FileIcon, video: Video };
+  const contentTypeIcons = { text: Type, video_link: Video, pdf: FileIcon, image: Image, video: Video };
 
   const tabs = [
     { key: 'lessons', label: 'Lessons', count: lessons?.length },
@@ -72,6 +72,26 @@ export default function CourseView() {
         <Link to="/student/dashboard" className="btn-ghost mb-6 -ml-2">
           <ArrowLeft size={18} /> Back to My Courses
         </Link>
+
+        {/* Error display */}
+        {courseError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-red-700 font-medium">Failed to load course</p>
+            <p className="text-red-500 text-sm mt-1">{courseError?.response?.data?.detail || 'Please try again later'}</p>
+          </div>
+        )}
+        {lessonsError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-red-700 font-medium">Failed to load lessons</p>
+            <p className="text-red-500 text-sm mt-1">{lessonsError?.response?.data?.detail || 'Please try again later'}</p>
+          </div>
+        )}
+        {homeworksError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-red-700 font-medium">Failed to load homework</p>
+            <p className="text-red-500 text-sm mt-1">{homeworksError?.response?.data?.detail || 'Please try again later'}</p>
+          </div>
+        )}
 
         {/* Course Header */}
         <div className="bg-gradient-hero rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
@@ -99,17 +119,15 @@ export default function CourseView() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === tab.key
-                  ? 'border-brand-500 text-brand-700'
-                  : 'border-transparent text-warm-500 hover:text-gray-700'
-              }`}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${activeTab === tab.key
+                ? 'border-brand-500 text-brand-700'
+                : 'border-transparent text-warm-500 hover:text-gray-700'
+                }`}
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className={`px-1.5 py-0.5 rounded text-xs ${
-                  activeTab === tab.key ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'
-                }`}>
+                <span className={`px-1.5 py-0.5 rounded text-xs ${activeTab === tab.key ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
                   {tab.count || 0}
                 </span>
               )}
@@ -141,7 +159,7 @@ export default function CourseView() {
                         <span className="badge-neutral flex items-center gap-1 flex-shrink-0">
                           <Icon size={12} />
                           {lesson.content_type === 'video_link'
-                            ? 'Video Link'
+                            ? 'Video'
                             : lesson.content_type === 'pdf'
                               ? 'PDF'
                               : lesson.content_type === 'image'
@@ -183,14 +201,15 @@ export default function CourseView() {
                               <img
                                 src={lesson.content_url}
                                 alt={lesson.title}
-                                className="max-w-full rounded-xl border border-gray-200"
+                                className="max-w-full rounded-xl border border-gray-200 shadow-sm"
                               />
                             )}
                             {lesson.content_type === 'video' && lesson.content_url && (
-                              <video controls className="w-full rounded-xl border border-gray-200">
-                                <source src={lesson.content_url} />
-                                Your browser does not support the video tag.
-                              </video>
+                              <video
+                                controls
+                                src={lesson.content_url}
+                                className="w-full rounded-xl bg-black"
+                              />
                             )}
                           </div>
                         </div>
