@@ -110,4 +110,15 @@ export const chatAPI = {
   send: (courseId, data) => api.post(`/courses/${courseId}/chat`, data),
 };
 
+// ═══════════════════════════════════════════
+// Upload API
+// ═══════════════════════════════════════════
+export const uploadAPI = {
+  file: (formData, onProgress) =>
+    api.post('/upload/file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onProgress,
+    }),
+};
+
 export default api;

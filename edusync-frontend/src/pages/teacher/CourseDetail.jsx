@@ -2,13 +2,51 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import PageShell from '../../components/layout/PageShell';
-import { courseAPI, lessonAPI, homeworkAPI } from '../../lib/api';
+import { courseAPI, lessonAPI, homeworkAPI, uploadAPI } from '../../lib/api';
 import {
   ArrowLeft, FileText, Plus, Upload, Link as LinkIcon, Type,
   Loader2, ClipboardList, Sparkles, Settings, Calendar, Eye,
-  Video, FileIcon, Image
+  Video, FileIcon, Image, CheckCircle2, AlertCircle, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+function UploadProgress({ progress, filename, status, onRemove }) {
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'uploading': return <Loader2 size={16} className="animate-spin text-brand-500" />;
+      case 'done': return <CheckCircle2 size={16} className="text-green-500" />;
+      case 'error': return <AlertCircle size={16} className="text-red-500" />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="mt-2 p-3 bg-warm-50 rounded-xl border border-warm-200">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          {getStatusIcon()}
+          <span className="text-sm text-gray-700 truncate">{filename}</span>
+        </div>
+        {status === 'error' && onRemove && (
+          <button onClick={onRemove} className="text-warm-400 hover:text-red-500">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      {status === 'uploading' && (
+        <div className="w-full bg-warm-200 rounded-full h-1.5">
+          <div
+            className="bg-brand-500 h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+      {status === 'uploading' && (
+        <p className="text-xs text-warm-500 mt-1 text-right">{progress}%</p>
+      )}
+    </div>
+  );
+}
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -21,6 +59,14 @@ export default function CourseDetail() {
   // Lesson form state
   const [lessonForm, setLessonForm] = useState({
     title: '', description: '', content_type: 'text', content_text: '', content_url: '', file: null,
+  });
+
+  // Upload state
+  const [uploadState, setUploadState] = useState({
+    progress: 0,
+    status: 'idle', // idle | uploading | done | error
+    uploadedUrl: null,
+    filename: '',
   });
 
   // Homework form state
@@ -54,6 +100,7 @@ export default function CourseDetail() {
       queryClient.invalidateQueries({ queryKey: ['lessons', id] });
       setShowLessonForm(false);
       setLessonForm({ title: '', description: '', content_type: 'text', content_text: '', content_url: '', file: null });
+      setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' });
     },
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to add lesson'),
   });
@@ -79,8 +126,34 @@ export default function CourseDetail() {
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to update prompt'),
   });
 
+  const handleFileSelect = async (file) => {
+    if (!file) return;
+    setLessonForm((p) => ({ ...p, file }));
+    setUploadState({ progress: 0, status: 'uploading', uploadedUrl: null, filename: file.name });
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const res = await uploadAPI.file(fd, (e) => {
+        const pct = Math.round((e.loaded * 100) / e.total);
+        setUploadState((prev) => ({ ...prev, progress: pct }));
+      });
+      setUploadState({ progress: 100, status: 'done', uploadedUrl: res.data.url, filename: file.name });
+      toast.success('File uploaded successfully!');
+    } catch {
+      setUploadState((prev) => ({ ...prev, status: 'error' }));
+      toast.error('File upload failed');
+    }
+  };
+
   const handleLessonSubmit = (e) => {
     e.preventDefault();
+    if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && uploadState.status !== 'done') {
+      toast.error('Please wait for file upload to complete');
+      return;
+    }
+
     const fd = new FormData();
     fd.append('title', lessonForm.title);
     fd.append('description', lessonForm.description);
@@ -89,8 +162,8 @@ export default function CourseDetail() {
       fd.append('content_text', lessonForm.content_text);
     } else if (lessonForm.content_type === 'video_link') {
       fd.append('content_url', lessonForm.content_url);
-    } else if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && lessonForm.file) {
-      fd.append('file', lessonForm.file);
+    } else if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && uploadState.uploadedUrl) {
+      fd.append('content_url', uploadState.uploadedUrl);
     }
     lessonMutation.mutate(fd);
   };
@@ -213,7 +286,10 @@ export default function CourseDetail() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Content Type</label>
                     <select
                       value={lessonForm.content_type}
-                      onChange={(e) => setLessonForm((p) => ({ ...p, content_type: e.target.value }))}
+                      onChange={(e) => {
+                        setLessonForm((p) => ({ ...p, content_type: e.target.value }));
+                        setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' });
+                      }}
                       className="input-base"
                     >
                       <option value="text">Rich Text</option>
@@ -267,9 +343,19 @@ export default function CourseDetail() {
                     <input
                       type="file"
                       accept=".pdf"
-                      onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
+                      onChange={(e) => {
+                        if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+                      }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
+                    {uploadState.status !== 'idle' && (
+                      <UploadProgress
+                        progress={uploadState.progress}
+                        filename={uploadState.filename}
+                        status={uploadState.status}
+                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -279,9 +365,19 @@ export default function CourseDetail() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
+                      onChange={(e) => {
+                        if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+                      }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
+                    {uploadState.status !== 'idle' && (
+                      <UploadProgress
+                        progress={uploadState.progress}
+                        filename={uploadState.filename}
+                        status={uploadState.status}
+                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -291,18 +387,36 @@ export default function CourseDetail() {
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => setLessonForm((p) => ({ ...p, file: e.target.files[0] }))}
+                      onChange={(e) => {
+                        if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+                      }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
+                    {uploadState.status !== 'idle' && (
+                      <UploadProgress
+                        progress={uploadState.progress}
+                        filename={uploadState.filename}
+                        status={uploadState.status}
+                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
+                      />
+                    )}
                   </div>
                 )}
 
                 <div className="flex items-center gap-3 pt-2">
-                  <button type="submit" disabled={lessonMutation.isPending} className="btn-primary">
+                  <button
+                    type="submit"
+                    disabled={lessonMutation.isPending || uploadState.status === 'uploading'}
+                    className="btn-primary"
+                  >
                     {lessonMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                    Add Lesson
+                    {uploadState.status === 'uploading' ? 'Uploading...' : 'Add Lesson'}
                   </button>
-                  <button type="button" onClick={() => setShowLessonForm(false)} className="btn-secondary">
+                  <button type="button" onClick={() => {
+                    setShowLessonForm(false);
+                    setLessonForm({ title: '', description: '', content_type: 'text', content_text: '', content_url: '', file: null });
+                    setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' });
+                  }} className="btn-secondary">
                     Cancel
                   </button>
                 </div>

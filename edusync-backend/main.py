@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models
-from routers import auth, schools, courses, lessons, homework, enrollments, chat
+from routers import auth, schools, courses, lessons, homework, enrollments, chat, upload
 
 # Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -31,6 +31,7 @@ app.include_router(lessons.router, prefix="/api/v1")
 app.include_router(homework.router, prefix="/api/v1")
 app.include_router(enrollments.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
+app.include_router(upload.router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn
