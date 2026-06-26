@@ -190,11 +190,11 @@ export default function CourseView() {
                             {lesson.content_type === 'pdf' && (
                               <a
                                 href={lesson.content_url}
-                                download={lesson.title + '.pdf'}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn-primary"
                               >
-                                <Download size={16} /> Download PDF
+                                <Download size={16} /> View/Download PDF
                               </a>
                             )}
                             {lesson.content_type === 'image' && lesson.content_url && (
