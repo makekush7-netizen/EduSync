@@ -126,31 +126,15 @@ export default function CourseDetail() {
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to update prompt'),
   });
 
-  const handleFileSelect = async (file) => {
+  const handleFileSelect = (file) => {
     if (!file) return;
     setLessonForm((p) => ({ ...p, file }));
-    setUploadState({ progress: 0, status: 'uploading', uploadedUrl: null, filename: file.name });
-
-    const fd = new FormData();
-    fd.append('file', file);
-
-    try {
-      const res = await uploadAPI.file(fd, (e) => {
-        const pct = Math.round((e.loaded * 100) / e.total);
-        setUploadState((prev) => ({ ...prev, progress: pct }));
-      });
-      setUploadState({ progress: 100, status: 'done', uploadedUrl: res.data.url, filename: file.name });
-      toast.success('File uploaded successfully!');
-    } catch {
-      setUploadState((prev) => ({ ...prev, status: 'error' }));
-      toast.error('File upload failed');
-    }
   };
 
   const handleLessonSubmit = (e) => {
     e.preventDefault();
-    if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && uploadState.status !== 'done') {
-      toast.error('Please wait for file upload to complete');
+    if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && !lessonForm.file) {
+      toast.error('Please select a file');
       return;
     }
 
@@ -162,8 +146,8 @@ export default function CourseDetail() {
       fd.append('content_text', lessonForm.content_text);
     } else if (lessonForm.content_type === 'video_link') {
       fd.append('content_url', lessonForm.content_url);
-    } else if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && uploadState.uploadedUrl) {
-      fd.append('content_url', uploadState.uploadedUrl);
+    } else if (['pdf', 'image', 'video'].includes(lessonForm.content_type) && lessonForm.file) {
+      fd.append('file', lessonForm.file);
     }
     lessonMutation.mutate(fd);
   };
@@ -348,13 +332,10 @@ export default function CourseDetail() {
                       }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
-                    {uploadState.status !== 'idle' && (
-                      <UploadProgress
-                        progress={uploadState.progress}
-                        filename={uploadState.filename}
-                        status={uploadState.status}
-                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
-                      />
+                    {lessonForm.file && (
+                      <p className="mt-2 text-sm text-brand-600 flex items-center gap-1">
+                        <CheckCircle2 size={16} /> Selected: {lessonForm.file.name}
+                      </p>
                     )}
                   </div>
                 )}
@@ -370,13 +351,10 @@ export default function CourseDetail() {
                       }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
-                    {uploadState.status !== 'idle' && (
-                      <UploadProgress
-                        progress={uploadState.progress}
-                        filename={uploadState.filename}
-                        status={uploadState.status}
-                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
-                      />
+                    {lessonForm.file && (
+                      <p className="mt-2 text-sm text-brand-600 flex items-center gap-1">
+                        <CheckCircle2 size={16} /> Selected: {lessonForm.file.name}
+                      </p>
                     )}
                   </div>
                 )}
@@ -392,13 +370,10 @@ export default function CourseDetail() {
                       }}
                       className="input-base file:mr-4 file:py-1 file:px-3 file:border-0 file:rounded-lg file:text-sm file:bg-brand-50 file:text-brand-700"
                     />
-                    {uploadState.status !== 'idle' && (
-                      <UploadProgress
-                        progress={uploadState.progress}
-                        filename={uploadState.filename}
-                        status={uploadState.status}
-                        onRemove={() => setUploadState({ progress: 0, status: 'idle', uploadedUrl: null, filename: '' })}
-                      />
+                    {lessonForm.file && (
+                      <p className="mt-2 text-sm text-brand-600 flex items-center gap-1">
+                        <CheckCircle2 size={16} /> Selected: {lessonForm.file.name}
+                      </p>
                     )}
                   </div>
                 )}
@@ -406,11 +381,11 @@ export default function CourseDetail() {
                 <div className="flex items-center gap-3 pt-2">
                   <button
                     type="submit"
-                    disabled={lessonMutation.isPending || uploadState.status === 'uploading'}
+                    disabled={lessonMutation.isPending}
                     className="btn-primary"
                   >
                     {lessonMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                    {uploadState.status === 'uploading' ? 'Uploading...' : 'Add Lesson'}
+                    {lessonMutation.isPending ? 'Uploading...' : 'Add Lesson'}
                   </button>
                   <button type="button" onClick={() => {
                     setShowLessonForm(false);
